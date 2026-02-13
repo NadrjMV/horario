@@ -146,91 +146,78 @@
     </div>
 
     <script>
-        // Objetivo: calcular a hora de saída para fechar 7 horas de trabalho líquido.
-        const JORNADA_HORAS = 7; 
-        const JORNADA_MILISSEGUNDOS = JORNADA_HORAS * 60 * 60 * 1000;
+        // Objetivo: calcular a hora de saída para fechar 8h48 horas de trabalho líquido.
+        const JORNADA_HORAS = 8.8; // 8h48min
+        const JORNADA_MILISSEGUNDOS = JORNADA_HORAS * 60 * 60 * 1000;
 
         function calcularSaida() {
-            // Pega os valores de tempo no formato "HH:MM"
-            const chegadaStr = document.getElementById('chegada').value;
-            const saidaPausaStr = document.getElementById('saidaAlmoco').value;
-            const retornoPausaStr = document.getElementById('retornoAlmoco').value;
-            const resultadoDiv = document.getElementById('resultado');
+            // Pega os valores de tempo no formato "HH:MM"
+            const chegadaStr = document.getElementById('chegada').value;
+            const saidaPausaStr = document.getElementById('saidaAlmoco').value;
+            const retornoPausaStr = document.getElementById('retornoAlmoco').value;
+            const resultadoDiv = document.getElementById('resultado');
 
-            // Validação simples para evitar erros com campos vazios
-            if (!chegadaStr || !saidaPausaStr || !retornoPausaStr) {
-                resultadoDiv.textContent = "⚠️ Preencha todos os campos de horário.";
-                return;
-            }
+            // Validação simples para evitar erros com campos vazios
+            if (!chegadaStr || !saidaPausaStr || !retornoPausaStr) {
+                resultadoDiv.textContent = "⚠️ Preencha todos os campos de horário.";
+                return;
+            }
 
-            // 1. Converter horas para milissegundos para facilitar o cálculo
-            
-            // Função auxiliar para converter "HH:MM" para minutos
-            const timeToMinutes = (timeStr) => {
-                const [hours, minutes] = timeStr.split(':').map(Number);
-                return hours * 60 + minutes;
-            };
+            // 1. Converter horas para milissegundos para facilitar o cálculo
+            
+            // Função auxiliar para converter "HH:MM" para minutos
+            const timeToMinutes = (timeStr) => {
+                const [hours, minutes] = timeStr.split(':').map(Number);
+                return hours * 60 + minutes;
+            };
 
-            const chegadaMin = timeToMinutes(chegadaStr);
-            const saidaPausaMin = timeToMinutes(saidaPausaStr);
-            const retornoPausaMin = timeToMinutes(retornoPausaStr);
+            const chegadaMin = timeToMinutes(chegadaStr);
+            const saidaPausaMin = timeToMinutes(saidaPausaStr);
+            const retornoPausaMin = timeToMinutes(retornoPausaStr);
 
-            // 2. Calcular o tempo de pausa em minutos
-            // Se a pausa for menor que a chegada (ex: trabalhou até meia-noite), 
-            // a subtração pode dar negativo. Para simplificar, assumimos que os horários
-            // se referem ao mesmo dia, mas o cálculo deve ser robusto.
-            let tempoPausaMin = retornoPausaMin - saidaPausaMin;
-            
-            // Se o retorno for no dia seguinte (ex: saiu 23:00 e voltou 01:00), 
-            // a diferença será negativa. Ajustamos adicionando 24h (1440 minutos).
-            // O uso de `input type="time"` geralmente restringe a horários do mesmo dia.
-            if (tempoPausaMin < 0) {
-                 // Caso a pausa passe para o dia seguinte (saída 23:00, retorno 01:00)
-                 tempoPausaMin += 1440; // 24 horas em minutos
-            }
-            
-            // 3. Calcular a jornada total em minutos (líquida + pausa)
-            // Jornada líquida é 7h * 60 min = 420 minutos
-            const jornadaLiquidaMin = JORNADA_HORAS * 60; 
-            const jornadaTotalMin = jornadaLiquidaMin + tempoPausaMin;
+            // 2. Calcular o tempo de pausa em minutos
+            let tempoPausaMin = retornoPausaMin - saidaPausaMin;
+            
+            if (tempoPausaMin < 0) {
+                 tempoPausaMin += 1440; // 24 horas em minutos
+            }
+            
+            // 3. Calcular a jornada total em minutos (líquida + pausa)
+            // Ajustado para 8h48 (528 minutos)
+            const jornadaLiquidaMin = 528; 
+            const jornadaTotalMin = jornadaLiquidaMin + tempoPausaMin;
 
-            // 4. Calcular o horário de saída final em minutos
-            let saidaFinalMin = chegadaMin + jornadaTotalMin;
-            
-            // 5. Ajustar para o formato de 24 horas (se passar de 1440 minutos)
-            // Se o horário final for maior que 24 horas, subtraímos um dia (1440 minutos)
-            const diasPassados = Math.floor(saidaFinalMin / 1440);
-            saidaFinalMin = saidaFinalMin % 1440; 
-            
-            // 6. Converter o total de minutos de volta para "HH:MM"
-            const horasSaida = Math.floor(saidaFinalMin / 60);
-            const minutosSaida = saidaFinalMin % 60;
+            // 4. Calcular o horário de saída final em minutos
+            let saidaFinalMin = chegadaMin + jornadaTotalMin;
+            
+            // 5. Ajustar para o formato de 24 horas
+            const diasPassados = Math.floor(saidaFinalMin / 1440);
+            saidaFinalMin = saidaFinalMin % 1440; 
+            
+            // 6. Converter o total de minutos de volta para "HH:MM"
+            const horasSaida = Math.floor(saidaFinalMin / 60);
+            const minutosSaida = saidaFinalMin % 60;
 
-            const formatTime = (value) => String(value).padStart(2, '0');
+            const formatTime = (value) => String(value).padStart(2, '0');
 
-            const horaSaidaStr = `${formatTime(horasSaida)}:${formatTime(minutosSaida)}`;
-            
-            // 7. Exibir o resultado
-            let mensagem = `Você deve sair às **${horaSaidaStr}** para completar 7h de trabalho.`;
+            const horaSaidaStr = `${formatTime(horasSaida)}:${formatTime(minutosSaida)}`;
+            
+            // 7. Exibir o resultado
+            let mensagem = `Você deve sair às **${horaSaidaStr}** para completar 8h48 de trabalho.`;
 
-            // Adiciona nota se a saída for no dia seguinte (para clareza)
-            if (diasPassados > 0) {
-                mensagem += ` (Saída no dia seguinte, ou ${diasPassados} dias depois)`;
-            }
+            if (diasPassados > 0) {
+                mensagem += ` (Saída no dia seguinte)`;
+            }
 
-            resultadoDiv.innerHTML = mensagem; // Usa innerHTML para o **bold**
+            resultadoDiv.innerHTML = mensagem;
+        }
 
-            // Para debugar: console.log({ chegadaMin, saidaPausaMin, retornoPausaMin, tempoPausaMin, jornadaTotalMin, saidaFinalMin, horaSaidaStr });
-        }
+        document.addEventListener('DOMContentLoaded', calcularSaida);
+        
+        document.getElementById('chegada').addEventListener('change', calcularSaida);
+        document.getElementById('saidaAlmoco').addEventListener('change', calcularSaida);
+        document.getElementById('retornoAlmoco').addEventListener('change', calcularSaida);
 
-        // Inicia o cálculo com os valores padrão ao carregar
-        document.addEventListener('DOMContentLoaded', calcularSaida);
-        
-        // Adiciona listeners para recalcular automaticamente ao mudar os horários
-        document.getElementById('chegada').addEventListener('change', calcularSaida);
-        document.getElementById('saidaAlmoco').addEventListener('change', calcularSaida);
-        document.getElementById('retornoAlmoco').addEventListener('change', calcularSaida);
-
-    </script>
+    </script>
 </body>
 </html>
